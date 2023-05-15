@@ -46,9 +46,11 @@ async function main() {
             password = readline.question('请输入密码：');
         }
 
+        var downloadPath = readline.question("请输入文件下载路径：");
+
         // 提交交易
         console.log('Submitting transaction to download file...');
-        const result = await contract.submitTransaction('DownloadFile', id, iv, password);
+        const result = await contract.submitTransaction('DownloadFile', id, iv, password, downloadPath);
 
         // 将result转为布尔型，打印下载是否成功
         if (result.toString('utf8') == 'true') {
