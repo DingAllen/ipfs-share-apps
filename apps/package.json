@@ -15,9 +15,11 @@
     "author": "DingAllen",
     "license": "Apache-2.0",
     "dependencies": {
+        "crypto": "^1.0.1",
         "fabric-ca-client": "^2.2.4",
         "fabric-network": "^2.2.4",
-        "readline-sync": "^1.4.10"
+        "readline-sync": "^1.4.10",
+        "uuid": "^9.0.0"
     },
     "devDependencies": {
         "chai": "^4.2.0",

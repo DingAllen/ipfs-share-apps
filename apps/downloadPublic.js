@@ -32,7 +32,7 @@ async function main() {
         const network = await gateway.getNetwork('mychannel');
 
         // Get the contract from the network.
-        const contract = network.getContract('ipfsSaveShare');
+        const contract = network.getContract('ipfs-share');
 
 
         var id = readline.question("请输入文件的唯一识别码：");
@@ -50,10 +50,11 @@ async function main() {
 
         // 提交交易
         console.log('Submitting transaction to download file...');
-        const result = await contract.submitTransaction('DownloadFile', id, iv, password, downloadPath);
+        const result = await contract.submitTransaction('DownloadPublic', id, iv, password);
 
         // 将result转为布尔型，打印下载是否成功
-        if (result.toString('utf8') == 'true') {
+        if (result) {
+            fs.writeFileSync(downloadPath, Buffer.from(JSON.parse(result)));
             console.log('文件下载成功！');
         } else {
             console.log('文件下载失败！');

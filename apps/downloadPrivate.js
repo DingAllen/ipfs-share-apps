@@ -40,10 +40,11 @@ async function main() {
 
         // 提交交易
         console.log('Submitting transaction to download file...');
-        const result = await contract.submitTransaction('DownloadFile', id, downloadPath);
+        const result = await contract.submitTransaction('DownloadFile', id);
 
         // 将result转为布尔型，打印下载是否成功
-        if (result.toString('utf8') == 'true') {
+        if (result) {
+            fs.writeFileSync(downloadPath, Buffer.from(JSON.parse(result)));
             console.log('文件下载成功！');
         } else {
             console.log('文件下载失败！');

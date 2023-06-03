@@ -4,6 +4,45 @@ const { Gateway, Wallets } = require('fabric-network');
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline-sync');
+const crypto = require('crypto');
+const { v4: uuidv4 } = require('uuid');
+
+function H(data) {
+    const sha256 = crypto.createHash('sha256');
+    sha256.update(data);
+    return sha256.digest('hex');
+}
+
+// AES加密函数
+function aes_encrypt(text, password) {
+    const iv = crypto.randomBytes(16); // 生成一个随机的16字节的初始化向量
+    const key = crypto.scryptSync(password, 'salt', 32); // 通过密码生成32字节的密钥
+    
+
+    const cipher = crypto.createCipheriv('aes-256-cbc', key, iv); // 创建加密器
+    let encrypted = cipher.update(text, 'utf8', 'hex'); // 加密输入的明文
+    encrypted += cipher.final('hex');
+
+    return {
+        iv: iv.toString('hex'), // 返回加密时使用的初始化向量，转换为16进制字符串
+        encryptedText: encrypted // 返回加密后的密文，转换为16进制字符串
+    };
+}
+
+// AES解密函数
+function aes_decrypt(iv, encryptedText, password) {
+    const key = crypto.scryptSync(password, 'salt', 32); // 通过密码生成32字节的密钥
+    const decipher = crypto.createDecipheriv('aes-256-cbc', key, Buffer.from(iv, 'hex')); // 创建解密器，传入初始化向量
+
+    let decrypted = decipher.update(encryptedText, 'hex', 'utf8'); // 解密输入的密文
+    decrypted += decipher.final('utf8');
+
+    return decrypted; // 返回解密后的明文
+}
+
+function timestamp() {
+    return new Date().getTime().toString();
+}
 
 async function main() {
     try {
@@ -32,7 +71,7 @@ async function main() {
         const network = await gateway.getNetwork('mychannel');
 
         // Get the contract from the network.
-        const contract = network.getContract('ipfsSaveShare');
+        const contract = network.getContract('ipfs-share');
 
         // 提示用户输入文件路径，并读取文件内容
         var filename = readline.question("请输入要上传的文件路径：");
@@ -46,11 +85,33 @@ async function main() {
             password = readline.question("请输入加密密码：");
         }
 
+        var info = {};
+
+        var hash = H(fp);
+
+        // 生成文件块的唯一识别码
+        const id = uuidv4();
+        info['If'] = id;
+
+        var Up = null;
+        if (ne) {
+            // 对文件地址加密
+            var encrypted = aes_encrypt(hash, password);
+            Up = encrypted.encryptedText;
+            info['iv'] = encrypted.iv;
+        } else {
+            Up = hash;
+        }
+
+        console.log(info);
+
         // 提交交易
         console.log('Submitting transaction to upload file...');
-        const result = await contract.submitTransaction('UploadFile', fp, ne, password);
+        const result = await contract.submitTransaction('UploadPublic', fp, ne, Up, id);
 
-        console.log('文件上传成功！信息：' + result.toString('utf8'));
+        if(result.toString() == 'true') {
+            console.log('文件上传成功！信息：' + info.toString());
+        }
 
         // Disconnect from the gateway.
         await gateway.disconnect();

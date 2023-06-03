@@ -4,6 +4,8 @@ const { Gateway, Wallets } = require('fabric-network');
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline-sync');
+const USBKey = require('./usbkey.js');
+const { v4: uuidv4 } = require('uuid');
 
 async function main() {
     try {
@@ -32,17 +34,32 @@ async function main() {
         const network = await gateway.getNetwork('mychannel');
 
         // Get the contract from the network.
-        const contract = network.getContract('ipfsSaveShare');
+        const contract = network.getContract('ipfs-share');
 
         // 提示用户输入文件路径，并读取文件内容
         var filename = readline.question("请输入要上传的文件路径：");
         var fp = fs.readFileSync(filename);
 
+        var usbkey = new USBKey();
+        var encryptedInfo = usbkey.encryptFile(fp);
+        var blocks = encryptedInfo.blocks;
+        var Bs = encryptedInfo.encryptedBlocks;
+
+        // 生成等长的uuid序列
+        var bids = [];
+        for (var i = 0; i < blocks.length; i++) {
+            bids.push(uuidv4());
+        }
+
+        const id = uuidv4();
+
         // 提交交易
         console.log('Submitting transaction to upload file...');
-        const result = await contract.submitTransaction('UploadFile', fp);
+        const result = await contract.submitTransaction('UploadFile', blocks, Bs, bids, id);
 
-        console.log('文件上传成功！文件的唯一识别符为：' + result.toString('utf8'));
+        if (result == 'true') {
+            console.log('文件上传成功！文件的唯一识别码为：' + id);
+        }
 
         // Disconnect from the gateway.
         await gateway.disconnect();
