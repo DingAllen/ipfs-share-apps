@@ -55,7 +55,7 @@ async function main() {
 
         // 提交交易
         console.log('Submitting transaction to upload file...');
-        const result = await contract.submitTransaction('UploadFile', blocks, Bs, bids, id);
+        const result = await contract.submitTransaction('UploadFile', JSON.stringify(blocks), JSON.stringify(Bs), JSON.stringify(bids), id);
 
         if (result == 'true') {
             console.log('文件上传成功！文件的唯一识别码为：' + id);

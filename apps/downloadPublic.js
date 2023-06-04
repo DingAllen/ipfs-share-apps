@@ -52,7 +52,6 @@ async function main() {
         console.log('Submitting transaction to download file...');
         const result = await contract.submitTransaction('DownloadPublic', id, iv, password);
 
-        // 将result转为布尔型，打印下载是否成功
         if (result) {
             fs.writeFileSync(downloadPath, Buffer.from(JSON.parse(result)));
             console.log('文件下载成功！');

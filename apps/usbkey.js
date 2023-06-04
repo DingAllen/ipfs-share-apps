@@ -113,6 +113,6 @@ const saveRSAKeyPair = () => {
     fs.writeFileSync('usbkey/privateKey.pem', privateKey);
 }
 
-// saveRSAKeyPair();
+saveRSAKeyPair();
 
 module.exports = USBKey;

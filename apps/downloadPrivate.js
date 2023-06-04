@@ -4,6 +4,14 @@ const { Gateway, Wallets } = require('fabric-network');
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline-sync');
+const USBKey = require('./usbkey.js');
+const crypto = require('crypto');
+
+function H(data) {
+    const sha256 = crypto.createHash('sha256');
+    sha256.update(data);
+    return sha256.digest('hex');
+}
 
 async function main() {
     try {
@@ -42,10 +50,33 @@ async function main() {
         console.log('Submitting transaction to download file...');
         const result = await contract.submitTransaction('DownloadFile', id);
 
-        // 将result转为布尔型，打印下载是否成功
         if (result) {
-            fs.writeFileSync(downloadPath, Buffer.from(JSON.parse(result)));
-            console.log('文件下载成功！');
+            console.log('加密文件块下载成功！接下来进行USBKey解密和校验工作...');
+            // 解析result
+            var datas = JSON.parse(result);
+            var usbkey = new USBKey();
+            var blocks = [];
+            // datas的结构是数组，其中每一条的数据为[文件块原本的哈希值, 加密块数据]。
+            // 现在要一一解密，并且校验哈希值。
+            var i = 0;
+            for (i = 0; i < datas.length; i++) {
+                var data = datas[i];
+                var hash = data[0];
+                var encryptedData = data[1];
+                var decryptedData = usbkey.decrypt(encryptedData);
+                var decryptedHash = H(decryptedData);
+                if (decryptedHash !== hash) {
+                    console.log('文件哈希校验失败！下载失败');
+                    break;
+                }
+                blocks.push(decryptedData);
+            }
+            // 如果所有的文件块都下载成功，那么就将它们合并成一个文件。
+            if (i === datas.length) {
+                var data = Buffer.concat(blocks);
+                fs.writeFileSync(downloadPath, data);
+                console.log('文件下载成功！');
+            }
         } else {
             console.log('文件下载失败！');
         }
