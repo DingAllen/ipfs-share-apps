@@ -1,6 +1,7 @@
 'use strict';
 
 const { Gateway, Wallets } = require('fabric-network');
+const stringify = require('json-stringify-deterministic');
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline-sync');
@@ -56,9 +57,9 @@ async function main() {
         // 提交交易
         console.log('Submitting transaction to upload file...');
         const result = await contract.submitTransaction('UploadPrivate',
-            Buffer.from(JSON.stringify(blocks)),
-            Buffer.from(JSON.stringify(Bs)),
-            Buffer.from(JSON.stringify(bids)),
+            stringify(blocks),
+            stringify(Bs),
+            stringify(bids),
             id);
 
         if (result == 'true') {
