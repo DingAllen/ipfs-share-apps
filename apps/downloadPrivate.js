@@ -40,7 +40,7 @@ async function main() {
         const network = await gateway.getNetwork('mychannel');
 
         // Get the contract from the network.
-        const contract = network.getContract('ipfsSaveShare');
+        const contract = network.getContract('ipfs-share');
 
 
         var id = readline.question("请输入文件的唯一识别码：");
@@ -48,12 +48,12 @@ async function main() {
 
         // 提交交易
         console.log('Submitting transaction to download file...');
-        const result = await contract.submitTransaction('DownloadFile', id);
+        const result = await contract.submitTransaction('DownloadPrivate', id);
 
         if (result) {
             console.log('加密文件块下载成功！接下来进行USBKey解密和校验工作...');
             // 解析result
-            var datas = JSON.parse(result);
+            var datas = JSON.parse(result.toString());
             var usbkey = new USBKey();
             var blocks = [];
             // datas的结构是数组，其中每一条的数据为[文件块原本的哈希值, 加密块数据]。

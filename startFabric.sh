@@ -22,7 +22,7 @@ rm -rf apps/wallet/*
 pushd ../test-network
 ./network.sh down
 ./network.sh up createChannel -ca -s couchdb
-./network.sh deployCC -ccn ipfs-share -ccv 1 -cci InitLedger -ccl ${CC_SRC_LANGUAGE} -ccp ${CC_SRC_PATH}
+./network.sh deployCC -ccn ipfs-share -ccv 1 -cci InitLedger -ccl ${CC_SRC_LANGUAGE} -ccp ${CC_SRC_PATH} -cccg ../ipfs-share/collections_config.json
 popd
 
 cat <<EOF
