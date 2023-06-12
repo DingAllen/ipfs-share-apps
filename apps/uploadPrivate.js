@@ -57,9 +57,9 @@ async function main() {
         // 提交交易
         console.log('Submitting transaction to upload file...');
         const result = await contract.submitTransaction('UploadPrivate',
-            Buffer.from(stringify(blocks)).toString(),
-            Buffer.from(stringify(Bs)).toString(),
-            Buffer.from(stringify(bids)).toString(),
+            stringify(blocks),
+            stringify(Bs),
+            stringify(bids),
             id);
 
         if (result == 'true') {
